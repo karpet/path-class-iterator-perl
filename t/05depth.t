@@ -10,11 +10,11 @@ my $no_links = setup();
 
 if ($no_links)
 {
-    plan tests => 21;
+    plan tests => 11;
 }
 else
 {
-    plan tests => 22;
+    plan tests => 12;
 }
 
 my $root    = 'test';
@@ -48,13 +48,8 @@ until ($walker->done)
 {
     my $f = $walker->next;
     my $d = $f->depth;
-    ok($d eq $f->depth, "depth $d " . $f->depth);
     is($d, $f->depth, "depth of $f == $d");
-
-    debug("$f  -> $d");
-
     $count++;
-
 }
 
 ok($count > 1, "found some files");
@@ -64,5 +59,5 @@ unless ($no_links)
     cmp_ok($skipped, '==', 2, "skipped bad links");
 }
 
-cleanup();
+#cleanup();
 
