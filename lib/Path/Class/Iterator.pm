@@ -12,45 +12,40 @@ our $VERSION = '0.07';
 our $Err;
 our $debug = $ENV{PERL_TEST} || $ENV{PERL_DEBUG} || 0;
 
-if ($debug)
-{
+if ($debug) {
     require Data::Dump;
 }
 
 my @acc = qw/
-  root
-  start
-  follow_symlinks
-  follow_hidden
-  iterator
-  error_handler
-  error
-  show_warnings
-  breadth_first
-  interesting
-  push_queue
-  pop_queue
-  queue
-  depth
+    root
+    start
+    follow_symlinks
+    follow_hidden
+    iterator
+    error_handler
+    error
+    show_warnings
+    breadth_first
+    interesting
+    push_queue
+    pop_queue
+    queue
+    depth
 
-  /;
+    /;
 
-sub _listing
-{
+sub _listing {
     my $self = shift;
     my $path = shift;
 
     my $d = $path->open;
 
-    unless (defined $d)
-    {
+    unless ( defined $d ) {
         $self->error("cannot open $path: $!");
-        if ($self->error_handler->($self, $path, $!))
-        {
-            return Iterator->new(sub { Iterator::is_done(); return undef });
+        if ( $self->error_handler->( $self, $path, $! ) ) {
+            return Iterator->new( sub { Iterator::is_done(); return undef } );
         }
-        else
-        {
+        else {
             croak "can't open $path: $!";
         }
     }
@@ -60,12 +55,10 @@ sub _listing
 
             # Get next file, skipping . and ..
             my $next;
-            while (1)
-            {
+            while (1) {
                 $next = $d->read;
 
-                if (!defined $next)
-                {
+                if ( !defined $next ) {
                     undef $d;    # allow garbage collection
                     Iterator::is_done();
                 }
@@ -76,19 +69,17 @@ sub _listing
             }
 
             # Return this item
-            my $f = Path::Class::Iterator::Dir->new($path, $next);
-            if (-d $f)
-            {
-                $self->{_depth} =
-                  (scalar($f->cleanup->dir_list) - $self->{_root_depth});
+            my $f = Path::Class::Iterator::Dir->new( $path, $next );
+            if ( -d $f ) {
+                $self->{_depth} = (
+                    scalar( $f->cleanup->dir_list ) - $self->{_root_depth} );
 
             }
-            else
-            {
-                $f = Path::Class::Iterator::File->new($path, $next);
+            else {
+                $f = Path::Class::Iterator::File->new( $path, $next );
                 my $p = $f->parent->cleanup;
-                $self->{_depth} =
-                  (scalar($p->dir_list) - $self->{_root_depth} + 1);
+                $self->{_depth}
+                    = ( scalar( $p->dir_list ) - $self->{_root_depth} + 1 );
 
             }
 
@@ -98,125 +89,117 @@ sub _listing
     );
 }
 
-sub next
-{
-    my $self = shift;
+sub next {
+    my $self  = shift;
     my $depth = $self->cur_depth;
-    my $n = $self->iterator->value;
+    my $n     = $self->iterator->value;
     $n->depth($depth);
     return $n;
 }
 
-sub done
-{
+sub done {
     my $self = shift;
     return $self->iterator->is_exhausted;
 }
 
 sub cur_depth { return $_[0]->{_depth} }
 
-sub new
-{
+sub new {
     my $proto = shift;
     my $class = ref($proto) || $proto;
     my $self  = {};
     my %opts  = @_;
-    @$self{keys %opts} = values %opts;
-    bless($self, $class);
+    @$self{ keys %opts } = values %opts;
+    bless( $self, $class );
     $self->mk_accessors(@acc);
 
-    $self->start(time());
+    $self->start( time() );
     $self->{_depth} = 0;    # internal tracking
 
     $self->root or croak "root param required";
-    $self->root(dir($self->root));
-    unless ($self->root->open)
-    {
+    $self->root( dir( $self->root ) );
+    unless ( $self->root->open ) {
         $Err = $self->root . " cannot be opened: $!";
         return undef;
     }
 
-    $self->{_root_depth} = scalar($self->root->dir_list);
+    $self->{_root_depth} = scalar( $self->root->dir_list );
 
     $self->error_handler(
         sub {
-            my ($self, $path, $msg) = @_;
+            my ( $self, $path, $msg ) = @_;
             warn "skipping $path: $msg" if $self->show_warnings;
             return 1;
         }
-      )
-      unless $self->error_handler;
+    ) unless $self->error_handler;
 
     $self->breadth_first
-      ? $self->pop_queue(
+        ? $self->pop_queue(
         sub {
             my $self = shift;
-            return pop(@{$self->{queue}});
+            return pop( @{ $self->{queue} } );
         }
-      )
-      : $self->pop_queue(
+        )
+        : $self->pop_queue(
         sub {
             my $self = shift;
-            return shift(@{$self->{queue}});
+            return shift( @{ $self->{queue} } );
         }
-      );
+        );
 
-    $self->push_queue(sub { my $self = shift; push(@{$self->{queue}}, @_); });
+    $self->push_queue(
+        sub { my $self = shift; push( @{ $self->{queue} }, @_ ); } );
 
-    my $files = $self->_listing($self->root);
+    my $files = $self->_listing( $self->root );
 
-    $self->queue([]);
+    $self->queue( [] );
     $self->iterator(
         Iterator->new(
             sub {
 
                 # If no more files in current directory,
                 # get next directory off the queue
-                while ($files->is_exhausted)
-                {
+                while ( $files->is_exhausted ) {
 
                     # Nothing else on the queue? Then we're done .
-                    if (!$self->queue->[0])
-                    {
+                    if ( !$self->queue->[0] ) {
                         undef $files;    # allow garbage collection
                         Iterator::is_done();
                     }
 
                     # Create an iterator to return the files in that directory
-                    carp Data::Dump::pp($self->queue) if $debug;
+                    carp Data::Dump::pp( $self->queue ) if $debug;
 
-                    $files = $self->_listing($self->pop_queue->($self));
+                    $files = $self->_listing( $self->pop_queue->($self) );
                 }
 
                 # Get next file in current directory
                 my $next = $files->value;
 
-                if (!$self->follow_symlinks)
-                {
-                    while (-l $next && $files->isnt_exhausted)
-                    {
+                if ( !$self->follow_symlinks ) {
+                    while ( -l $next && $files->isnt_exhausted ) {
                         $next = $files->value;
                     }
                 }
 
                 # remember dirs for recursing later
                 # unless they exceed depth
-                carp join("\n", '=' x 50, "$next", $self->cur_depth) if $debug;
-                if (-d $next)
-                {
+                carp join( "\n", '=' x 50, "$next", $self->cur_depth )
+                    if $debug;
+                if ( -d $next ) {
 
-            # BUG?? does checking cur_depth() here invoke our bug?
+                    # BUG?? does checking cur_depth() here invoke our bug?
 
-                    unless (   $self->depth
-                            && $self->cur_depth > $self->depth)
+                    unless ( $self->depth
+                        && $self->cur_depth > $self->depth )
                     {
-                        $self->push_queue->($self, $next);
-                        if ($self->interesting)
-                        {
-                            my $new = $self->interesting->($self, $self->queue);
+                        $self->push_queue->( $self, $next );
+                        if ( $self->interesting ) {
+                            my $new
+                                = $self->interesting->( $self, $self->queue );
                             croak
-                              "return value from interesting() must be an ARRAY ref"
-                              unless ref $new eq 'ARRAY';
+                                "return value from interesting() must be an ARRAY ref"
+                                unless ref $new eq 'ARRAY';
                             $self->queue($new);
                         }
                     }
@@ -232,7 +215,6 @@ sub new
 
 1;
 
-
 package Path::Class::Iterator::File;
 use base qw( Path::Class::File Class::Accessor::Fast );
 __PACKAGE__->mk_accessors('depth');
@@ -244,7 +226,6 @@ use base qw( Path::Class::Dir Class::Accessor::Fast );
 __PACKAGE__->mk_accessors('depth');
 
 1;
-
 
 __END__
 

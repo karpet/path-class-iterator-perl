@@ -11,16 +11,14 @@ my $no_links = setup();
 
 my $root = 'test';
 
-sub debug
-{
+sub debug {
     diag(@_) if $ENV{PERL_TEST};
 }
 
-ok(
-    my $walker = Path::Class::Iterator->new(
+ok( my $walker = Path::Class::Iterator->new(
         root          => $root,
         error_handler => sub {
-            my ($self, $path, $msg) = @_;
+            my ( $self, $path, $msg ) = @_;
 
             debug $self->error;
             debug "we'll skip $path";
@@ -30,40 +28,35 @@ ok(
         follow_symlinks => 1,
         breadth_first   => 1,
         interesting     => sub {
-            my ($self, $stack) = @_;
+            my ( $self, $stack ) = @_;
 
-            return [sort { $b cmp $a } @$stack];
+            return [ sort { $b cmp $a } @$stack ];
 
         },
     ),
     "new object"
-  );
+);
 
 my $count = 0;
-until ($walker->done)
-{
+until ( $walker->done ) {
     my $f = $walker->next;
 
     $count++;
-    if (-l $f)
-    {
+    if ( -l $f ) {
         debug "$f is a symlink";
     }
-    elsif (-d $f)
-    {
+    elsif ( -d $f ) {
         debug "$f is a dir";
     }
-    elsif (-f $f)
-    {
+    elsif ( -f $f ) {
         debug "$f is a file";
     }
-    else
-    {
+    else {
         debug "no idea what $f is";
     }
 
 }
 
-ok($count > 1, "found some files");
+ok( $count > 1, "found some files" );
 
 cleanup();
