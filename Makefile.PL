@@ -12,6 +12,7 @@ requires 'Data::Dump'            => 0;
 requires 'Iterator'              => 0;
 requires 'Path::Class'           => 0;
 requires 'Class::Accessor::Fast' => 0;
+requires 'IO::Dir'               => 0;
 
 perl_version '5.8.3';
 license 'http://dev.perl.org/licenses/';
