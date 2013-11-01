@@ -1,5 +1,7 @@
+#!/usr/bin/env perl
+use strict;
+use warnings;
 use Test::More;
-
 use Path::Class::Iterator;
 
 require "t/help.pl";
@@ -60,6 +62,7 @@ until ( $walker->done ) {
 ok( $count > 1, "found some files" );
 debug "skipped $skipped files";
 unless ($no_links) {
+    diag(`ls -l $root`);
     cmp_ok( $skipped, '==', 2, "skipped bad links" );
 }
 
