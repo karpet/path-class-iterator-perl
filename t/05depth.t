@@ -50,6 +50,7 @@ until ( $walker->done ) {
 ok( $count > 1, "found some files" );
 debug "skipped $skipped files";
 unless ($no_links) {
+    diag(`ls -l $root`);
     cmp_ok( $skipped, '==', 2, "skipped bad links" );
 }
 
