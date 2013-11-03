@@ -9,10 +9,10 @@ require "t/help.pl";
 my $no_links = setup();
 
 if ($no_links) {
-    plan tests => 11;
+    plan tests => 11;  # 14 - 2 skipped, 1 unless
 }
 else {
-    plan tests => 12;
+    plan tests => 14;
 }
 
 my $root    = 'test';
@@ -47,12 +47,12 @@ until ( $walker->done ) {
     $count++;
 }
 
-ok( $count > 1, "found some files" );
+is( $count, 11, "found $count files" );
 debug "skipped $skipped files";
 unless ($no_links) {
     diag(`ls -l $root`);
     cmp_ok( $skipped, '==', 2, "skipped bad links" );
 }
 
-#cleanup();
+cleanup();
 
