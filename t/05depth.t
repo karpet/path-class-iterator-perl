@@ -9,7 +9,7 @@ require "t/help.pl";
 my $no_links = setup();
 
 if ($no_links) {
-    plan tests => 11;  # 14 - 2 skipped, 1 unless
+    plan tests => 12;    # 14 - 2 skipped
 }
 else {
     plan tests => 14;
@@ -47,11 +47,14 @@ until ( $walker->done ) {
     $count++;
 }
 
-is( $count, 11, "found $count files" );
-debug "skipped $skipped files";
-unless ($no_links) {
-    diag(`ls -l $root`);
-    cmp_ok( $skipped, '==', 2, "skipped bad links" );
+diag(`ls -l $root`);
+if ($no_links) {
+    is( $count,   9, "found $count files" );
+    is( $skipped, 0, "skipped $skipped files" );
+}
+else {
+    is( $count,   11, "found $count files" );
+    is( $skipped, 2,  "skipped $skipped files" );
 }
 
 cleanup();

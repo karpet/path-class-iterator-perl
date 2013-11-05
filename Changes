@@ -1,5 +1,8 @@
 Revision history for Perl extension Path::Class::Iterator.
 
+0.07_02 4 Nov 2013
+ - refactor links-vs-nolinks tests in t/05
+
 0.07_01 1 Nov 2013
  - dev release to debug cpantesters fails
  - fix number of tests (again) in t/05
