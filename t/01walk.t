@@ -5,6 +5,8 @@ use warnings;
 
 use Path::Class::Iterator;
 
+diag("Testing Path::Class::Iterator version " . $Path::Class::Iterator::VERSION);
+
 my $root = '.';
 
 sub debug {
