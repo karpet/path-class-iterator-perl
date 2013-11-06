@@ -7,7 +7,7 @@ use Path::Class::Iterator;
 
 require "t/help.pl";
 
-my $no_links = setup();
+my $symlinks_supported = setup();
 
 my $root = 'test';
 

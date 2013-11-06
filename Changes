@@ -1,5 +1,8 @@
 Revision history for Perl extension Path::Class::Iterator.
 
+0.07_03 6 Nov 2013
+ - refactor symlink support detection
+
 0.07_02 4 Nov 2013
  - refactor links-vs-nolinks tests in t/05
 

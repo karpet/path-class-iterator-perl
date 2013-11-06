@@ -8,7 +8,7 @@ use Iterator;
 
 use base qw/ Class::Accessor::Fast /;
 
-our $VERSION = '0.07_02';
+our $VERSION = '0.07_03';
 our $Err;
 our $debug = $ENV{PERL_TEST} || $ENV{PERL_DEBUG} || 0;
 

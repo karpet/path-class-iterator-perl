@@ -6,9 +6,9 @@ use Path::Class::Iterator;
 
 require "t/help.pl";
 
-my $no_links = setup();
+my $symlinks_supported = setup();
 
-if ($no_links) {
+if ( !$symlinks_supported ) {
     plan tests => 2;
 }
 else {
@@ -61,7 +61,7 @@ until ( $walker->done ) {
 
 ok( $count > 1, "found some files" );
 debug "skipped $skipped files";
-unless ($no_links) {
+if ($symlinks_supported) {
     diag(`ls -l $root`);
     cmp_ok( $skipped, '==', 2, "skipped bad links" );
 }
