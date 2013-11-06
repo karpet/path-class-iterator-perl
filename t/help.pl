@@ -12,22 +12,24 @@ my $dir = dir(qw( test cannot_chdir ));
 sub setup {
     mkdir( "$dir", 0000 );
 
-    # catch fatal errs for systems that don't have symlinks
-    my $no_links = 0;
+    my $supports_symlink = eval { symlink( "", "" ); 1 };
+
+    if ( !$supports_symlink ) { return 0 }
+
     for my $real ( keys %links ) {
-        unless ( eval { symlink $real, $links{$real}; 1; } ) {
-            $no_links = 1;
-            warn "symlink returned $@ ($!)";
-        }
+        symlink $real, $links{$real}
+            or warn "Can't symlink $links{$real} -> $real";
     }
 
-    return $no_links;
+    return 1;
 }
 
 sub cleanup {
     for my $r ( keys %links ) {
-        my $l = $links{$r};
-        unlink($l) or warn "can't unlink $l";
+        if ( -l $links{$r} ) {
+            my $l = $links{$r};
+            unlink($l) or warn "can't unlink $l";
+        }
     }
     chmod 0777, "$dir";
     rmdir "$dir";
